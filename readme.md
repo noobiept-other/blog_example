@@ -18,10 +18,25 @@ Then add to the settings.
         'blog',
     ]
 
+And add the urls.
+
+## blog_example/urls.py ##
+
+    from django.conf.urls import url, include
+    from django.contrib import admin
+    
+    urlpatterns = [
+        url( r'^', include( 'blog.urls' ) ),
+        url( r'^admin/', admin.site.urls ),
+    ]
+
+The url pattern can be different, I'll be matching the blog urls since the root, but you could change it to `r'^blog/'` for example. Make sure the pattern is open-ended (without the `$`) so it can continue to try to match with the rest of the blog urls.
+
+Now lets work on our `blog` django application.
 
 First start with the model.
 
-# models.py #
+## blog/models.py ##
 
     from django.db import models
     from django.contrib.auth.models import User
@@ -40,12 +55,11 @@ The `slug` will be the post url, and is going to be generated from the title.
 
 We'll take advantage of the django admin page, to add the blog posts, so we'll need to set some things before that is possible.
 
-# admin.py #
+## blog/admin.py ##
 
     from django.contrib import admin
     from blog.models import Post
-    
-    
+        
     class PostAdmin( admin.ModelAdmin ):
     
         list_display = [ 'title', 'author', 'date_added' ]
@@ -60,13 +74,67 @@ Some basic admin configuration. Note that we're setting the `slug` field to be a
 
 Now that we have our data defined, time to display it! For now we'll simply show a list of all the added posts.
 
-urls.py/views.py/templates (on the blog folder)
 
-Then we do the urls and views and template.
-Just the url to home.
-home view
-and template that shows a list of all the model items.
+## blog/urls.py ##
 
+    from django.conf.urls import url
+    from . import views
+    
+    urlpatterns = [
+        url( r'^$', views.listAll ),
+    ]
+
+## blog/views.py ##
+
+    from django.shortcuts import render
+    from .models import Post
+    
+    def listAll( request ):
+        context = {
+            'posts': Post.objects.all()
+        }
+    
+        return render( request, 'blog/listAll.html', context )
+
+## blog/templates/blog/base.html ##
+
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Blog</title>        
+        </head>
+    <body>
+        <div>{% block content %}{% endblock %}</div>
+    </body>
+    </html>
+
+## blog/templates/blog/listAll.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li>{{ post.title }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No blog posts yet.</p>
+        {% endif %}
+    {% endblock %}
+
+By default, any files in a `templates` directory on each application will be added to the search path of templates by django. We're adding an extra `blog` folder to avoid name collisions with other applications. When we want to reference the `listAll.html` for example, we use the `blog/listAll.html`, so its obvious where this template belongs to.
+
+Now time to apply all migrations to the database.
+
+`python manage.py makemigrations`
+`python manage.py migrate`
+
+And start the server.
+
+`python manage.py runserver`
 
 
 Show how to add a blog post with the django admin.
