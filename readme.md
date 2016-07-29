@@ -137,12 +137,81 @@ And start the server.
 `python manage.py runserver`
 
 
-Show how to add a blog post with the django admin.
+We'll be adding blog posts through the django admin page, so for starters, lets create a account.
 
+`python manage.py createsuperuser`
+
+Now just go to the `/admin/` url, click on the `add` button on the blog section to add.
+
+If you go back to the home page, now you'll see a list with the titles of the posts you just added.
+  
   
 Alright, now we need to be able to open individual blog posts.
- 
-urls / views / templates
+
+
+## blog/urls.py ##
+
+    from django.conf.urls import url
+    from . import views
+    
+    urlpatterns = [
+        url( r'^$', views.listAll, name= 'listAll' ),
+        url( r'^post/(?P<slug>[-\w]+)$', views.showPost, name= 'showPost' ),
+    ]
+
+The url will contain a post slug to identify it.
+We're also giving names to the urls, so its easier to reference it in templates, as we'll see below.
+
+## blog/views.py ##
+
+    from django.shortcuts import render, get_object_or_404
+    from .models import Post
+  
+    # (...)
+    
+    def showPost( request, slug ):
+        context = {
+            'post': get_object_or_404( Post, slug= slug )
+        }
+    
+        return render( request, 'blog/showPost.html', context )
+
+Nothing too crazy, we try to get a post object and then render the `showPost.html` to display its information. If not found, then we raise a `Http404` exception instead.
+
+## blog/templates/blog/showPost.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        <h1>{{ post.title }} - by {{ post.author }} on {{ post.date_added }}</h1>
+        <p>{{ post.content }}</p>
+    
+        <a href="{% url 'listAll' %}">Back</a>
+    {% endblock %}
+
+Here we receive the `post` object we got from the view, and simply show its data.
+Notice how we're going back to the blog list page, by using the url names we defined above.
+
+## blog/templates/blog/listAll.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li><a href="{% url 'showPost' post.slug %}">{{ post.title }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No blog posts yet.</p>
+        {% endif %}
+    {% endblock %}
+
+There's one more change we need to make, we need to add a link from the blog list to an individual post. Once again, having the named urls makes our lives easier.
+
+
+
 
 Now lets add a category list (and have it sorted by the number of posts per category).
 
