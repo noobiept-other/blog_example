@@ -41,7 +41,7 @@ First start with the model.
     from django.db import models
     from django.contrib.auth.models import User
     from django.utils import timezone
-    
+     
     class Post( models.Model ):
     
         author = models.ForeignKey( User )
@@ -49,9 +49,13 @@ First start with the model.
         slug = models.SlugField( max_length= 100, unique= True )
         content = models.TextField()
         date_added = models.DateTimeField( default= timezone.now )
+    
+        class Meta:
+            ordering = ( '-date_added', )
 
 We have a `Post` model to represent our blog's data. Very simple for now, just a post with a title, the content, written by a certain user at a certain time.
 The `slug` will be the post url, and is going to be generated from the title.
+We're setting the ordering property, so that the recent posts appear first.
 
 We'll take advantage of the django admin page, to add the blog posts, so we'll need to set some things before that is possible.
 
@@ -211,9 +215,14 @@ Notice how we're going back to the blog list page, by using the url names we def
 There's one more change we need to make, we need to add a link from the blog list to an individual post. Once again, having the named urls makes our lives easier.
 
 
+# Categories #
+
+Now lets add some categories to the posts.
+
 
 
 Now lets add a category list (and have it sorted by the number of posts per category).
+Add to the base.html, since we want it always visible
 
 
 Add a `is_published` property.

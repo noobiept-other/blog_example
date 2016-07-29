@@ -10,3 +10,6 @@ class Post( models.Model ):
     slug = models.SlugField( max_length= 100, unique= True )
     content = models.TextField()
     date_added = models.DateTimeField( default= timezone.now )
+
+    class Meta:
+        ordering = ( '-date_added', )
