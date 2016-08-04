@@ -292,6 +292,73 @@ We can show the categories of each post in the template.
     {% endblock %}
 
 
+Now we'll add a new page to our blog, a category page that shows all the posts from that category.
+
+We need to set up the urls.
+
+## blog/urls.py ##
+
+    urlpatterns = [
+        # (...)
+        url( r'^category/(?P<slug>[-\w]+)$', views.showCategory, name= 'showCategory' ),
+    ]
+
+And the view.
+
+## blog/views.py ##
+
+    from .models import Post, Category
+    # (...)
+    
+    def showCategory( request, slug ):
+        category = get_object_or_404( Category, slug= slug )
+    
+        context = {
+            'category': category,
+            'posts': category.post_set.all()
+        }
+    
+        return render( request, 'blog/showCategory.html', context )
+
+And the template.
+
+## blog/templates/blog/showCategory.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        <h1>{{ category.name }}</h1>
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li><a href="{% url 'showPost' post.slug %}">{{ post.title }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No posts yet.</p>
+        {% endif %}
+    {% endblock %}
+
+Finally, just add a link to the category page.
+
+## blog/templates/blog/showPost.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        <h1>{{ post.title }} - by {{ post.author }} on {{ post.date_added }}</h1>
+        <h2>
+            Categories:
+            {% for category in post.categories.all %}
+                <a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a>
+            {% endfor %}
+        </h2>
+        <p>{{ post.content }}</p>
+    
+        <a href="{% url 'listAll' %}">Back</a>
+    {% endblock %}
+
+We use the `slug` as a way to build the link to the category page (similar to what we're doing for the posts).
 
 Now lets add a category list (and have it sorted by the number of posts per category).
 Add to the base.html, since we want it always visible

@@ -5,7 +5,7 @@
     <h2>
         Categories:
         {% for category in post.categories.all %}
-            {{ category.name }}
+            <a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a>
         {% endfor %}
     </h2>
     <p>{{ post.content }}</p>
