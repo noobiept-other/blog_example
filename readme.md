@@ -404,11 +404,66 @@ We add a list with all the categories available, and with a value next to it tha
 
 We get the categories sorted by the number of posts per category, and then we add to the context on all the views (only showing the `listAll()` here).
 
+# Search #
 
+Now how to do a blog search. It will be available at every page, like the category list, so we need to add it to the `base.html` template as well.
 
-Now how to do a blog search.
+## blog/urls.py ##
 
+    urlpatterns = [
+        # (...)
+        url( r'^search$', views.search, name= 'search' ),
+    ]
 
+## blog/views.py ##
+
+    # (...)
+    
+    def search( request ):
+        query = request.POST.get( 'search' )
+        context = {
+            'categories': getSortedCategories(),
+            'query': query
+        }
+    
+        if query and (4 <= len(query) <= 20):
+            context[ 'posts' ] = Post.objects.filter( title__icontains= query )
+    
+        else:
+            context[ 'message' ] = 'Query needs to be between 4 and 20 characters.'
+    
+        return render( request, 'blog/search.html', context )
+
+## blog/templates/blog/base.html ##
+
+    <!-- (...) -->
+    <form action="{% url 'search' %}" method="post">
+        {% csrf_token %}
+        <input name="search" type="text" maxlength="20" />
+        <button type="submit">🔍</button>
+    </form>
+
+## blog/templates/blog/search.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        <h1>Searched for: {{ query }}</h1>
+    
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+    
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li><a href="{% url 'showPost' post.slug %}">{{ post.title }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No results.</p>
+        {% endif %}
+    {% endblock %}
 
 Voila! We have ourselves a blog. 
 
