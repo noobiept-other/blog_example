@@ -219,13 +219,62 @@ There's one more change we need to make, we need to add a link from the blog lis
 
 Now lets add some categories to the posts.
 
+## blog/models.py ##
+
+    class Category( models.Model ):
+        name = models.CharField( max_length= 50, unique= True )
+        slug = models.SlugField( max_length= 50, unique= True )
+    
+        def __str__(self):
+            return self.name
+    
+    class Post( models.Model ):
+        # (...)
+        categories = models.ManyToManyField( Category )
+
+        def __str__(self):
+            return self.title
+
+We add a new model for a category, it has a name and a slug (to be used as the url for a list of all posts from that category).
+
+On the `Post` model, now we need to add a `categories` field. A post can have multiple categories, and each category can be in any number of posts, so what we need is a `ManyToManyField` property. 
+
+We've added as well a `__str__()` method to the models, useful for example when choosing the categories of a new post.
+
+Since we changed the models, we'll need to update our migrations.
+
+`python manage.py makemigrations`
+`python manage.py migrate`
+
+Now lets update our admin code, so we can easily add categories through the admin page.
+
+## blog/admin.py ##
+
+    from django.contrib import admin
+    from blog.models import Post, Category
+
+    class CategoryAdmin( admin.ModelAdmin ):
+        list_display = [ 'name', ]
+        prepopulated_fields = { 'slug': ( 'name', ) }
+    
+    class PostAdmin( admin.ModelAdmin ):
+        list_display = [ 'title', 'author', 'date_added' ]
+        list_filter = [ 'date_added', 'categories' ]
+        search_fields = [ 'title', 'content' ]
+        date_hierarchy = 'date_added'
+        prepopulated_fields = { 'slug': ( 'title', ) }
+        filter_horizontal = ( 'categories', )
+    
+    admin.site.register( Post, PostAdmin )
+    admin.site.register( Category, CategoryAdmin )
+
+The category's slug gets automatically added based on the name (similar to how it happens on the `Post` model). We're also adding a way to filter the posts per category.
+
+If you had some posts added already, make sure to add some categories to them, through the django admin page.
 
 
 Now lets add a category list (and have it sorted by the number of posts per category).
 Add to the base.html, since we want it always visible
-
-
-Add a `is_published` property.
 
 
 
