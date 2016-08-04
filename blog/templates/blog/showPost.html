@@ -2,6 +2,12 @@
 
 {% block content %}
     <h1>{{ post.title }} - by {{ post.author }} on {{ post.date_added }}</h1>
+    <h2>
+        Categories:
+        {% for category in post.categories.all %}
+            {{ category.name }}
+        {% endfor %}
+    </h2>
     <p>{{ post.content }}</p>
 
     <a href="{% url 'listAll' %}">Back</a>

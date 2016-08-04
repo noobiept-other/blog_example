@@ -272,6 +272,26 @@ The category's slug gets automatically added based on the name (similar to how i
 
 If you had some posts added already, make sure to add some categories to them, through the django admin page.
 
+We can show the categories of each post in the template.
+
+## blog/templates/blog/showPost.html ##
+
+    {% extends 'blog/base.html' %}
+    
+    {% block content %}
+        <h1>{{ post.title }} - by {{ post.author }} on {{ post.date_added }}</h1>
+        <h2>
+            Categories:
+            {% for category in post.categories.all %}
+                {{ category.name }}
+            {% endfor %}
+        </h2>
+        <p>{{ post.content }}</p>
+    
+        <a href="{% url 'listAll' %}">Back</a>
+    {% endblock %}
+
+
 
 Now lets add a category list (and have it sorted by the number of posts per category).
 Add to the base.html, since we want it always visible
