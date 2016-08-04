@@ -360,8 +360,49 @@ Finally, just add a link to the category page.
 
 We use the `slug` as a way to build the link to the category page (similar to what we're doing for the posts).
 
-Now lets add a category list (and have it sorted by the number of posts per category).
-Add to the base.html, since we want it always visible
+Now lets add a category list. We want it to be visible in every page, so we need to add it in the `base.html` template.
+
+## blog/templates/blog/base.html ##
+
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Blog</title>
+        </head>
+    <body>
+        {% if categories %}
+            <h2>Categories</h2>
+            <ul>
+                {% for category in categories %}
+                    <li><a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a> {{ category.post_set.count }}x</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div>{% block content %}{% endblock %}</div>
+    </body>
+    </html>
+
+We add a list with all the categories available, and with a value next to it that tells how many posts of that particular category are there.
+
+## blog/views.py ##
+
+    from django.db.models import Count
+    # (...)
+    
+    def getSortedCategories():
+        return Category.objects.annotate( count= Count( 'post' ) ).order_by( '-count' )
+    
+    def listAll( request ):
+        context = {
+            'categories': getSortedCategories(),
+            'posts': Post.objects.all()
+        }
+    
+        return render( request, 'blog/listAll.html', context )
+    # (...)
+
+We get the categories sorted by the number of posts per category, and then we add to the context on all the views (only showing the `listAll()` here).
 
 
 

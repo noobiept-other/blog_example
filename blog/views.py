@@ -1,9 +1,15 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Count
 from .models import Post, Category
+
+
+def getSortedCategories():
+    return Category.objects.annotate( count= Count( 'post' ) ).order_by( '-count' )
 
 
 def listAll( request ):
     context = {
+        'categories': getSortedCategories(),
         'posts': Post.objects.all()
     }
 
@@ -12,6 +18,7 @@ def listAll( request ):
 
 def showPost( request, slug ):
     context = {
+        'categories': getSortedCategories(),
         'post': get_object_or_404( Post, slug= slug )
     }
 
@@ -22,6 +29,7 @@ def showCategory( request, slug ):
     category = get_object_or_404( Category, slug= slug )
 
     context = {
+        'categories': getSortedCategories(),
         'category': category,
         'posts': category.post_set.all()
     }
