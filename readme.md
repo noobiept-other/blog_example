@@ -118,6 +118,7 @@ Now that we have our data defined, time to display it! For now we'll simply show
     {% extends 'blog/base.html' %}
     
     {% block content %}
+        <h1>My Blog!</h1>
         {% if posts %}
             <ul>
                 {% for post in posts %}
@@ -201,6 +202,7 @@ Notice how we're going back to the blog list page, by using the url names we def
     {% extends 'blog/base.html' %}
     
     {% block content %}
+        <h1>My Blog!</h1>
         {% if posts %}
             <ul>
                 {% for post in posts %}
@@ -364,26 +366,40 @@ Now lets add a category list. We want it to be visible in every page, so we need
 
 ## blog/templates/blog/base.html ##
 
+    {% load static %}
     <!DOCTYPE html>
     <html>
         <head>
             <meta charset="utf-8" />
             <title>Blog</title>
+            <link rel="stylesheet" href="{% static 'blog/style.css' %}" />
         </head>
     <body>
-        {% if categories %}
-            <h2>Categories</h2>
-            <ul>
-                {% for category in categories %}
-                    <li><a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a> {{ category.post_set.count }}x</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
         <div>{% block content %}{% endblock %}</div>
+        <div>
+            {% if categories %}
+                <h2>Categories</h2>
+                <ul>
+                    {% for category in categories %}
+                        <li><a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a> {{ category.post_set.count }}x</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
     </body>
     </html>
 
 We add a list with all the categories available, and with a value next to it that tells how many posts of that particular category are there.
+
+## blog/static/blog/style.css ##
+
+    body {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+We'll also divide our blog in two columns, to have two columns, the left side will have the content, and the right side has the categories list. You're free to improve the styling as you see fit.
 
 ## blog/views.py ##
 
@@ -437,11 +453,23 @@ Now how to do a blog search. It will be available at every page, like the catego
 ## blog/templates/blog/base.html ##
 
     <!-- (...) -->
-    <form action="{% url 'search' %}" method="post">
-        {% csrf_token %}
-        <input name="search" type="text" maxlength="20" />
-        <button type="submit">🔍</button>
-    </form>
+    <div>
+        {% if categories %}
+            <h2>Categories</h2>
+            <ul>
+                {% for category in categories %}
+                    <li><a href="{% url 'showCategory' category.slug %}">{{ category.name }}</a> {{ category.post_set.count }}x</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form action="{% url 'search' %}" method="post">
+            {% csrf_token %}
+            <input name="search" type="text" maxlength="20" />
+            <button type="submit">🔍</button>
+        </form>
+    </div>
+
+We add the search elements to the right column (below the categories list).
 
 ## blog/templates/blog/search.html ##
 
@@ -466,4 +494,3 @@ Now how to do a blog search. It will be available at every page, like the catego
     {% endblock %}
 
 Voila! We have ourselves a blog. 
-
