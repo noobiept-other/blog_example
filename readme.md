@@ -1,24 +1,27 @@
 Lets do a simple blog with django.
 
-Initialize the project.
+We'll write it step by step, starting first by showing a list of posts, then how to open an individual post. We'll add some categories and then finally add some simple search functionality.
+
+# First Steps #
+
+Lets start by initializing the project.
 
 `django-admin startproject blog_example`
 
-
 We'll assume this blog is part of a bigger website, so we'll try to contain all our files in a single place.
 
-We'll create a django application to keep it separated from the rest, and to be easy to add to any other website.
+We'll create a django application to keep it separated from the rest of the project, so its easier to add to any other project.
 
 `python manage.py startapp blog`
 
-Then add to the settings.
+Then add to the settings and add the urls.
+
+## blog_example/settings.py ##
 
     INSTALLED_APPS = [
         # ...
         'blog',
     ]
-
-And add the urls.
 
 ## blog_example/urls.py ##
 
@@ -30,11 +33,11 @@ And add the urls.
         url( r'^admin/', admin.site.urls ),
     ]
 
-The url pattern can be different, I'll be matching the blog urls since the root, but you could change it to `r'^blog/'` for example. Make sure the pattern is open-ended (without the `$`) so it can continue to try to match with the rest of the blog urls.
+I'm matching the blog urls from the root, but you could change it to anything else, for example `r'^blog/'`. Make sure the pattern is open-ended (without the `$`) so it can continue to try to match with the rest of the blog urls.
 
-Now lets work on our `blog` django application.
+## Posts List ##
 
-First start with the model.
+For now, we focus on just showing a list with all the posts. First start with the model.
 
 ## blog/models.py ##
 
@@ -76,8 +79,7 @@ We'll take advantage of the django admin page, to add the blog posts, so we'll n
 
 Some basic admin configuration. Note that we're setting the `slug` field to be automatically populated based on the title.
 
-Now that we have our data defined, time to display it! For now we'll simply show a list of all the added posts.
-
+Now that we have our data defined, time to display it!
 
 ## blog/urls.py ##
 
@@ -144,8 +146,7 @@ And start the server.
 
 `python manage.py runserver`
 
-
-We'll be adding blog posts through the django admin page, so for starters, lets create a account.
+We'll be adding blog posts through the django admin page, so for starters, lets create an account.
 
 `python manage.py createsuperuser`
 
@@ -153,9 +154,9 @@ Now just go to the `/admin/` url, click on the `add` button on the blog section 
 
 If you go back to the home page, now you'll see a list with the titles of the posts you just added.
   
+# Individual Post #
   
 Alright, now we need to be able to open individual blog posts.
-
 
 ## blog/urls.py ##
 
@@ -167,7 +168,7 @@ Alright, now we need to be able to open individual blog posts.
         url( r'^post/(?P<slug>[-\w]+)$', views.showPost, name= 'showPost' ),
     ]
 
-The url will contain a post slug to identify it.
+The url will contain a post's slug to identify it.
 We're also giving names to the urls, so its easier to reference it in templates, as we'll see below.
 
 ## blog/views.py ##
@@ -219,7 +220,6 @@ Notice how we're going back to the blog list page, by using the url names we def
 
 There's one more change we need to make, we need to add a link from the blog list to an individual post. Once again, having the named urls makes our lives easier.
 
-
 # Categories #
 
 Now lets add some categories to the posts.
@@ -244,7 +244,7 @@ We add a new model for a category, it has a name and a slug (to be used as the u
 
 On the `Post` model, now we need to add a `categories` field. A post can have multiple categories, and each category can be in any number of posts, so what we need is a `ManyToManyField` property. 
 
-We've added as well a `__str__()` method to the models, useful for example when choosing the categories of a new post.
+We've added as well a `__str__()` method to the models, useful for example when choosing the categories of a new post in the admin page.
 
 Since we changed the models, we'll need to update our migrations.
 
@@ -273,11 +273,9 @@ Now lets update our admin code, so we can easily add categories through the admi
     admin.site.register( Post, PostAdmin )
     admin.site.register( Category, CategoryAdmin )
 
-The category's slug gets automatically added based on the name (similar to how it happens on the `Post` model). We're also adding a way to filter the posts per category.
+The category's `slug` gets automatically added based on the name (similar to how it happens on the `Post` model). We're also adding a way to filter the posts per category.
 
 If you had some posts added already, make sure to add some categories to them, through the django admin page.
-
-We can show the categories of each post in the template.
 
 ## blog/templates/blog/showPost.html ##
 
@@ -296,10 +294,11 @@ We can show the categories of each post in the template.
         <a href="{% url 'listAll' %}">Back</a>
     {% endblock %}
 
+We can show the categories of each post in the template.
 
-Now we'll add a new page to our blog, a category page that shows all the posts from that category.
+# Category List #
 
-We need to set up the urls.
+It can be useful to show only the posts from a certain category, so lets take care of that. By now you should already have an idea on how this works, we need to set up an url, add a view and a template.
 
 ## blog/urls.py ##
 
@@ -307,8 +306,6 @@ We need to set up the urls.
         # (...)
         url( r'^category/(?P<slug>[-\w]+)$', views.showCategory, name= 'showCategory' ),
     ]
-
-And the view.
 
 ## blog/views.py ##
 
@@ -324,8 +321,6 @@ And the view.
         }
     
         return render( request, 'blog/showCategory.html', context )
-
-And the template.
 
 ## blog/templates/blog/showCategory.html ##
 
@@ -344,7 +339,7 @@ And the template.
         {% endif %}
     {% endblock %}
 
-Finally, just add a link to the category page.
+We'll also add a link to the category page, from the post page.
 
 ## blog/templates/blog/showPost.html ##
 
@@ -365,7 +360,9 @@ Finally, just add a link to the category page.
 
 We use the `slug` as a way to build the link to the category page (similar to what we're doing for the posts).
 
-Now lets add a category list. We want it to be visible in every page, so we need to add it in the `base.html` template.
+# Category Menu #
+
+It can also be nice to have a list of all the categories visible at all times, for example as a column in the right side of the page. To do that, we'll need to change the `base.html` template.
 
 ## blog/templates/blog/base.html ##
 
@@ -405,7 +402,7 @@ We add a list with all the categories available, and with a value next to it tha
         justify-content: space-between;
     }
 
-We'll also divide our blog in two columns, to have two columns, the left side will have the content, and the right side has the categories list. You're free to improve the styling as you see fit.
+We'll also divide our blog in two columns, with the left side having the content, and the right side the categories list. You're free to improve the styling as you see fit.
 
 ## blog/views.py ##
 
@@ -428,7 +425,9 @@ We get the categories sorted by the number of posts per category, and then we ad
 
 # Search #
 
-Now how to do a blog search. It will be available at every page, like the category list, so we need to add it to the `base.html` template as well.
+It can also be useful to have a search functionality, here's an example on how that could be done.
+
+We want it to be available in all pages, so we'll add it to the `base.html` template as well.
 
 ## blog/urls.py ##
 
@@ -499,4 +498,8 @@ We add the search elements to the right column (below the categories list).
         {% endif %}
     {% endblock %}
 
+# Done! #
+
 Voila! We have ourselves a blog. 
+
+This is obviously a very crude blog, but hopefully it can give you some ideas to get you started on building your own. From here you can improve the styling of blog, and add any other feature you might need.
