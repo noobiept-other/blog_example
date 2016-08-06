@@ -2,19 +2,19 @@ Lets do a simple blog with django.
 
 We'll write it step by step, starting first by showing a list of posts, then how to open an individual post. We'll add some categories and then finally add some simple search functionality.
 
+The code is available in this project as well (click on the `source` tab).
+
 # First Steps #
 
 Lets start by initializing the project.
 
 `django-admin startproject blog_example`
 
-We'll assume this blog is part of a bigger website, so we'll try to contain all our files in a single place.
-
-We'll create a django application to keep it separated from the rest of the project, so its easier to add to any other project.
+We'll assume this blog is part of a bigger website, so we'll try to contain all our files in a single place. We do that by creating a django application to hold our code.
 
 `python manage.py startapp blog`
 
-Then add to the settings and add the urls.
+Then we need to register it in the project settings, and set up the application urls as well.
 
 ## blog_example/settings.py ##
 
@@ -56,7 +56,7 @@ For now, we focus on just showing a list with all the posts. First start with th
         class Meta:
             ordering = ( '-date_added', )
 
-We have a `Post` model to represent our blog's data. Very simple for now, just a post with a title, the content, written by a certain user at a certain time.
+We have a `Post` model to represent our blog's data. Very simple, just a post with a title and some content, written by a certain user at a certain time.
 The `slug` will be the post url, and is going to be generated from the title.
 We're setting the ordering property, so that the recent posts appear first.
 
@@ -137,7 +137,7 @@ Now that we have our data defined, time to display it!
 
 By default, any files in a `templates` directory on each application will be added to the search path of templates by django. We're adding an extra `blog` folder to avoid name collisions with other applications. When we want to reference the `listAll.html` for example, we use the `blog/listAll.html`, so its obvious where this template belongs to.
 
-Now time to apply all migrations to the database.
+Time to apply all migrations to the database.
 
 `python manage.py makemigrations`
 `python manage.py migrate`
@@ -146,17 +146,17 @@ And start the server.
 
 `python manage.py runserver`
 
-We'll be adding blog posts through the django admin page, so for starters, lets create an account.
+We'll be adding blog posts through the django admin page, so for starters, lets create a superuser account.
 
 `python manage.py createsuperuser`
 
-Now just go to the `/admin/` url, click on the `add` button on the blog section to add.
+Now just go to the `/admin/` url, click on the `add` button on the blog section to add a new post.
 
-If you go back to the home page, now you'll see a list with the titles of the posts you just added.
+If you go back to the home page, you'll see a list with the titles of the posts you just added.
   
 # Individual Post #
   
-Alright, now we need to be able to open individual blog posts.
+We need to be able to open individual blog posts, which is basically a page where all the post information is shown.
 
 ## blog/urls.py ##
 
@@ -168,8 +168,8 @@ Alright, now we need to be able to open individual blog posts.
         url( r'^post/(?P<slug>[-\w]+)$', views.showPost, name= 'showPost' ),
     ]
 
-The url will contain a post's slug to identify it.
-We're also giving names to the urls, so its easier to reference it in templates, as we'll see below.
+The url will contain a post's `slug`, which is how we identify which post to show.
+Notice that we're also giving names to the urls, so its easier to reference it in templates, as we'll see below.
 
 ## blog/views.py ##
 
@@ -242,7 +242,7 @@ Now lets add some categories to the posts.
 
 We add a new model for a category, it has a name and a slug (to be used as the url for a list of all posts from that category).
 
-On the `Post` model, now we need to add a `categories` field. A post can have multiple categories, and each category can be in any number of posts, so what we need is a `ManyToManyField` property. 
+On the `Post` model, we need to add a `categories` field. A post can have multiple categories, and each category can be in any number of posts, so what we need is a `ManyToManyField` property. 
 
 We've added as well a `__str__()` method to the models, useful for example when choosing the categories of a new post in the admin page.
 
@@ -455,6 +455,8 @@ We want it to be available in all pages, so we'll add it to the `base.html` temp
     
         return render( request, 'blog/search.html', context )
 
+Here we're only accepting queries between 4 and 20 characters, and will show a message if the query doesn't fall in that range.
+
 ## blog/templates/blog/base.html ##
 
     <!-- (...) -->
@@ -474,7 +476,7 @@ We want it to be available in all pages, so we'll add it to the `base.html` temp
         </form>
     </div>
 
-We add the search elements to the right column (below the categories list).
+We add the search elements on the right column (below the categories list).
 
 ## blog/templates/blog/search.html ##
 
@@ -497,6 +499,8 @@ We add the search elements to the right column (below the categories list).
             <p>No results.</p>
         {% endif %}
     {% endblock %}
+
+In the search template, we show what was the query given, and any given error message if available. Beyond that, its just a simple list of posts that match the search.
 
 # Done! #
 
