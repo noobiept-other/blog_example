@@ -57,7 +57,9 @@ For now, we focus on just showing a list with all the posts. First start with th
             ordering = ( '-date_added', )
 
 We have a `Post` model to represent our blog's data. Very simple, just a post with a title and some content, written by a certain user at a certain time.
+
 The `slug` will be the post url, and is going to be generated from the title.
+
 We're setting the ordering property, so that the recent posts appear first.
 
 We'll take advantage of the django admin page, to add the blog posts, so we'll need to set some things before that is possible.
@@ -140,6 +142,7 @@ By default, any files in a `templates` directory on each application will be add
 Time to apply all migrations to the database.
 
 `python manage.py makemigrations`
+
 `python manage.py migrate`
 
 And start the server.
@@ -169,6 +172,7 @@ We need to be able to open individual blog posts, which is basically a page wher
     ]
 
 The url will contain a post's `slug`, which is how we identify which post to show.
+
 Notice that we're also giving names to the urls, so its easier to reference it in templates, as we'll see below.
 
 ## blog/views.py ##
@@ -199,6 +203,7 @@ Nothing too crazy, we try to get a post object and then render the `showPost.htm
     {% endblock %}
 
 Here we receive the `post` object we got from the view, and simply show its data.
+
 Notice how we're going back to the blog list page, by using the url names we defined above.
 
 ## blog/templates/blog/listAll.html ##
@@ -249,6 +254,7 @@ We've added as well a `__str__()` method to the models, useful for example when 
 Since we changed the models, we'll need to update our migrations.
 
 `python manage.py makemigrations`
+
 `python manage.py migrate`
 
 Now lets update our admin code, so we can easily add categories through the admin page.
