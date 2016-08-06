@@ -85,7 +85,7 @@ Now that we have our data defined, time to display it! For now we'll simply show
     from . import views
     
     urlpatterns = [
-        url( r'^$', views.listAll ),
+        url( r'^$', views.listAll, name= 'listAll' ),
     ]
 
 ## blog/views.py ##
@@ -109,7 +109,10 @@ Now that we have our data defined, time to display it! For now we'll simply show
             <title>Blog</title>        
         </head>
     <body>
-        <div>{% block content %}{% endblock %}</div>
+        <div>
+            <a href="{% url 'listAll' %}">Home</a>
+            {% block content %}{% endblock %}
+        </div>
     </body>
     </html>
 
@@ -375,7 +378,10 @@ Now lets add a category list. We want it to be visible in every page, so we need
             <link rel="stylesheet" href="{% static 'blog/style.css' %}" />
         </head>
     <body>
-        <div>{% block content %}{% endblock %}</div>
+        <div>
+            <a href="{% url 'listAll' %}">Home</a>
+            {% block content %}{% endblock %}
+        </div>
         <div>
             {% if categories %}
                 <h2>Categories</h2>
